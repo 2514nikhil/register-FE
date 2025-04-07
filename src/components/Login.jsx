@@ -5,40 +5,45 @@ import { useNavigate } from "react-router-dom";
 import "./style.css";
 
 export const Login = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
-  const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const handleLogin = async () => {
     try {
-      const res = await axios.post("/login", { email, password });
-      setMessage(res.data.msg);
-      navigate("/dashboard");
+      const { data } = await axios.post("http://localhost:8888/login", {
+        email,
+        password,
+      });
+
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        navigate("/dashboard");
+      } else {
+        alert(data.msg);
+        navigate("/register");
+      }
     } catch (error) {
-      setMessage(error.response.data.msg);
+      alert(error.response?.data?.msg || "Login failed");
     }
   };
 
   return (
     <div className="container">
       <h1>Login</h1>
-      <form onSubmit={handleLogin}>
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter your Email"
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Enter your Password"
-        />
-        <button type="submit">Login</button>
-      </form>
-      {message && <p className="message">{message}</p>}
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Enter your Email"
+      />
+      <input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="Enter your Password"
+      />
+      <button onClick={handleLogin}>Login</button>
     </div>
   );
 };
